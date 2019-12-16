@@ -1,11 +1,17 @@
 /* eslint-disable no-undef */
-import ApiLoader from './ApiLoader';
-import { API_KEY, TOKEN, URL } from './constants';
-import { createNewElement, appendChildren, convertCoords } from './helpers';
+import {
+  createNewElement, appendChildren, convertCoords, addTextNode, showErrorMessage,
+} from './helpers';
 
 export default class GeoLocation {
   constructor(weather) {
     this.weather = weather;
+  }
+
+  async start() {
+    await this.getGeolocation();
+    await this.getMap();
+    this.renderGeoLocation();
   }
 
   async getGeolocation() {
@@ -13,10 +19,10 @@ export default class GeoLocation {
       if (navigator.geolocation) {
         await navigator.geolocation.getCurrentPosition((pos) => this.extractGeoLocation(pos));
       } else {
-        alert('Sorry, browser does not support geolocation!');
+        showErrorMessage('Sorry, browser does not support geolocation!');
       }
     } catch (err) {
-      throw new Error(err.message);
+      showErrorMessage(err.message);
     }
   }
 
@@ -24,11 +30,10 @@ export default class GeoLocation {
     const { latitude, longitude } = position.coords;
     this.weather.state.latitude = latitude;
     this.weather.state.longitude = longitude;
-    this.getMap();
   }
 
-  getMap() {
-    ymaps.ready(() => {
+  async getMap() {
+    await ymaps.ready(() => {
       const myMap = new ymaps.Map('map', {
         center: [this.weather.state.latitude, this.weather.state.longitude],
         zoom: 11,
@@ -43,13 +48,11 @@ export default class GeoLocation {
       });
       myMap.geoObjects.add(myGeoObject);
     });
-    this.renderGeoLocation();
   }
 
   renderGeoLocation() {
     this.renderMap();
     this.renderCoords();
-    this.initApiLoader();
   }
 
   renderMap() {
@@ -60,16 +63,16 @@ export default class GeoLocation {
   }
 
   renderCoords() {
-    const coords = `
-        <div class="coords">
-        <p class="latitude">Latitude: <span class="latitude-value">${convertCoords(this.weather.state.latitude)}</span></p>
-        <p class="longitude">Longitude: <span class="longitude-value">${convertCoords(this.weather.state.longitude)}</span></p>
-      </div>`;
-    this.geoLocationSection.innerHTML += coords;
+    const coords = createNewElement('div', 'coords');
+    this.latitude = createNewElement('p', 'latitude');
+    this.longitude = createNewElement('p', 'longitude');
+    this.addCoordsText();
+    appendChildren(coords, this.latitude, this.longitude);
+    appendChildren(this.geoLocationSection, coords);
   }
 
-  initApiLoader() {
-    this.apiLoader = new ApiLoader(this.weather, API_KEY, TOKEN, URL);
-    this.apiLoader.getData();
+  addCoordsText() {
+    addTextNode(this.latitude, `Latitude: ${convertCoords(this.weather.state.latitude)}`);
+    addTextNode(this.longitude, `Longitude: ${convertCoords(this.weather.state.longitude)}`);
   }
 }
