@@ -1,9 +1,5 @@
 import { getSeason, getTimeOfDay, showErrorMessage } from './helpers';
 
-import {
-  MILLISECONDS_IN_SECOND,
-} from './constants';
-
 export default class ApiLoader {
   constructor(weather, apiKey, url) {
     this.weather = weather;
@@ -32,25 +28,34 @@ export default class ApiLoader {
   }
 
   extractLocationData() {
-    this.weather.state.city = this.locationData.results[0].components.city;
-    this.weather.state.country = this.locationData.results[0].components.country;
-    if (!this.weather.state.localOffset) {
-      this.weather.state.localOffset = this.locationData.results[0].annotations.timezone.offset_sec;
+    if (!this.locationData.results[0].components.city) {
+      showErrorMessage('Сity not found');
+      window.location.reload();
     }
-    this.weather.state.cityOffset = this.locationData.results[0].annotations.timezone.offset_sec;
-    this.weather.state.timeOffset = this.weather.state.cityOffset - this.weather.state.localOffset;
+    if (this.locationData.results[0].components.city) {
+      this.weather.state.city = this.locationData.results[0].components.city;
+
+      this.weather.state.country = this.locationData.results[0].components.country;
+      if (!this.weather.state.locOffset) {
+        this.weather.state.locOffset = this.locationData.results[0].annotations.timezone.offset_sec;
+      }
+      this.weather.state.cityOffset = this.locationData.results[0].annotations.timezone.offset_sec;
+      this.weather.state.timeOffset = this.weather.state.cityOffset - this.weather.state.locOffset;
+    }
   }
 
   async getWeather() {
     try {
       const mainUrl = `${this.url.weather}${this.apiKey.weather}/${this.weather.state.latitude},${this.weather.state.longitude}`;
       const url = this.url.proxy + mainUrl;
-      const weatherResponse = await fetch(url);
-      this.weatherData = await weatherResponse.json();
-      this.extractWeatherTodayData();
-      this.extractWeatherForecastData();
+      this.weatherResponse = await fetch(url);
+      this.weatherData = await this.weatherResponse.json();
+      if ((this.weatherResponse.ok)) {
+        this.extractWeatherTodayData();
+        this.extractWeatherForecastData();
+      }
     } catch (err) {
-      showErrorMessage(err.message);
+      showErrorMessage('Server is not available! Weather is not found');
     }
   }
 
@@ -82,26 +87,32 @@ export default class ApiLoader {
 
   async getImage() {
     try {
-      const imageQuery = `
-        ${this.weather.state.summary}
-        ${getSeason(new Date(this.weather.state.localTime * MILLISECONDS_IN_SECOND))}
-        ${getTimeOfDay(new Date(this.weather.state.localTime * MILLISECONDS_IN_SECOND))}`;
+      const season = getSeason(this.weather.state.localTime);
+      const dayOfWeek = getTimeOfDay(this.weather.state.localTime);
+      const imageQuery = `${this.weather.state.summary},${season},${dayOfWeek}`;
       const url = `${this.url.unsplash}${imageQuery}&client_id=${this.apiKey.unsplash}`;
-      const imageResponse = await fetch(url);
-      this.imageData = await imageResponse.json();
-      this.weather.state.image = this.imageData.urls.regular;
+      this.imageResponse = await fetch(url);
+      this.imageData = await this.imageResponse.json();
+      if ((this.imageResponse.ok)) {
+        this.weather.state.image = this.imageData.urls.regular;
+      }
     } catch (err) {
-      showErrorMessage(err.message);
+      showErrorMessage('Server is not available! Background is not found');
     }
   }
 
   async getCoords() {
     try {
       const url = `${this.url.geocoder}${this.weather.state.city}&key=${this.apiKey.geocoder}`;
-      const coordsResponse = await fetch(url);
-      const coordsData = await coordsResponse.json();
-      this.weather.state.latitude = coordsData.results[0].geometry.lat;
-      this.weather.state.longitude = coordsData.results[0].geometry.lng;
+      this.coordsResponse = await fetch(url);
+      this.coordsData = await this.coordsResponse.json();
+      if ((this.coordsResponse.ok)) {
+        this.weather.state.latitude = this.coordsData.results[0].geometry.lat;
+        this.weather.state.longitude = this.coordsData.results[0].geometry.lng;
+      }
+      if ((this.coordsResponse.status === 400)) {
+        throw new Error('Incorrect Request, Nothing found!');
+      }
     } catch (err) {
       showErrorMessage(err.message);
     }

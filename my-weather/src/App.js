@@ -38,7 +38,7 @@ export default class App {
       await this.apiLoader.getData();
       this.endLoad();
     } catch (err) {
-      showErrorMessage(err.message);
+      showErrorMessage('Error');
     }
   }
 

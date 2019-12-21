@@ -8,11 +8,11 @@ import {
   removeFirstChildNode,
   convertDate,
 } from './helpers';
-import { MILLISECONDS_IN_SECOND, MILLISECONDS_IN_MINUTE, SECONDS_IN_MINUTE } from './constants';
+import { MILLISECONDS_IN_MINUTE, SECONDS_IN_MINUTE } from './constants';
 
 export default class Weather {
   constructor(storage) {
-    this.state = {};
+    this.state = { lastCity: 'Moscow' };
     this.storage = storage;
   }
 
@@ -25,7 +25,9 @@ export default class Weather {
   }
 
   renderBGImage() {
-    document.body.style.backgroundImage = `url(${this.state.image})`;
+    if (this.state.image) {
+      document.body.style.backgroundImage = `url(${this.state.image})`;
+    }
   }
 
   renderLocation() {
@@ -45,8 +47,7 @@ export default class Weather {
   }
 
   getCurrentDate() {
-    const newDate = new Date(this.state.localTime * MILLISECONDS_IN_SECOND);
-    this.state.currentDate = convertDate(newDate);
+    this.state.currentDate = convertDate(this.state.localTime);
     this.state.localTime += SECONDS_IN_MINUTE;
   }
 
@@ -104,10 +105,7 @@ export default class Weather {
     appendChildren(this.weatherSection, weatherForecast);
 
     document.querySelectorAll('.weather-forecast-day').forEach((item, index) => {
-      addTextNode(item,
-        getLongWeekDay(new Date(
-          (this.state.forecast.time[index] + this.state.timeOffset) * MILLISECONDS_IN_SECOND,
-        )));
+      addTextNode(item, getLongWeekDay((this.state.forecast.time[index] + this.state.timeOffset)));
     });
 
     document.querySelectorAll('.weather-forecast-icon').forEach((item, index) => {

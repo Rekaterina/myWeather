@@ -6,7 +6,12 @@ import {
   removeFirstChildNode,
   animateButton,
   removeAllChildNodes,
+  showErrorMessage,
 } from './helpers';
+
+import {
+  ENTER_KEY_CODE,
+} from './constants';
 
 
 export default class ControlPanel {
@@ -29,7 +34,9 @@ export default class ControlPanel {
     this.controlPanelElem = createNewElement('div', 'control-panel');
     appendChildren(header, this.controlPanelElem);
     this.renderReloadImageButton();
+    this.renderTranslate();
     this.renderTemperatureSwitch();
+    this.renderLastSearchCityButton();
     this.renderSearchBar();
   }
 
@@ -50,15 +57,35 @@ export default class ControlPanel {
     appendChildren(this.controlPanelElem, this.temperatureSwitch);
   }
 
+  renderLastSearchCityButton() {
+    this.lastCityButton = createNewElement('button', 'last-city-btn');
+    const span = createNewElement('span');
+    this.lastCityName = createNewElement('span', 'last-city');
+    addTextNode(span, 'Show weather in');
+    addTextNode(this.lastCityName, `${this.weather.state.lastCity}`);
+    appendChildren(this.lastCityButton, span, this.lastCityName);
+    appendChildren(this.controlPanelElem, this.lastCityButton);
+  }
+
   renderSearchBar() {
     this.searchBar = createNewElement('div', 'search-bar');
     this.searchInput = createNewElement('input', 'input');
     this.searchInput.setAttribute('type', 'text');
     this.searchInput.setAttribute('placeholder', 'Search city');
     this.searchButton = createNewElement('button', 'search-btn');
+    this.microphone = createNewElement('div', 'microphone');
+    this.microphoneIcon = createNewElement('i', 'fas', 'fa-microphone');
     addTextNode(this.searchButton, 'Search');
-    appendChildren(this.searchBar, this.searchInput, this.searchButton);
+    appendChildren(this.microphone, this.microphoneIcon);
+    appendChildren(this.searchBar, this.searchInput,
+      this.microphone, this.searchButton);
     appendChildren(this.controlPanelElem, this.searchBar);
+  }
+
+  renderTranslate() {
+    const translate = createNewElement('div');
+    translate.setAttribute('id', 'google_translate_element');
+    appendChildren(this.controlPanelElem, translate);
   }
 
   setActiveTool() {
@@ -75,8 +102,21 @@ export default class ControlPanel {
       this.reloadImage();
     });
 
-    this.temperatureSwitch.addEventListener('click', (e) => {
-      this.switchTemperature(e);
+    this.celsiusButton.addEventListener('click', () => {
+      if (this.storage.state.fahrenheit) {
+        this.chooseCelsius();
+      }
+    });
+
+    this.fahrenheitButton.addEventListener('click', () => {
+      if (this.storage.state.celsius) {
+        this.chooseFahrenheit();
+      }
+    });
+
+    this.lastCityButton.addEventListener('click', () => {
+      animateButton(this.lastCityButton);
+      this.searchLastCityInfo();
     });
 
     this.searchInput.addEventListener('change', ({ target }) => {
@@ -84,38 +124,58 @@ export default class ControlPanel {
     });
 
     this.searchButton.addEventListener('click', () => {
-      if (this.searchStr.length !== 0) {
+      if (this.searchInput.value) {
+        this.updateLastCity();
         animateButton(this.searchButton);
         this.updateInfo();
       }
     });
 
     window.addEventListener('keyup', ({ keyCode }) => {
-      if (keyCode === 13 && this.searchStr.length !== 0) {
+      if (keyCode === ENTER_KEY_CODE && this.searchInput.value) {
+        this.updateLastCity();
         this.updateInfo();
       }
     });
+
+    this.microphone.addEventListener('click', () => {
+      this.startRecognition();
+    });
+  }
+
+  updateLastCity() {
+    if ((this.searchInput.value).toLowerCase() !== (this.weather.state.city).toLowerCase()) {
+      const temp = this.weather.state.city;
+      this.weather.state.city = this.searchStr;
+      this.weather.state.lastCity = temp;
+      this.updateCityText();
+    }
+  }
+
+  searchLastCityInfo() {
+    this.switchCity();
+    this.updateInfo();
+  }
+
+  switchCity() {
+    const temp = this.weather.state.city;
+    this.weather.state.city = this.weather.state.lastCity;
+    this.weather.state.lastCity = temp;
+    this.updateCityText();
+  }
+
+  updateCityText() {
+    this.lastCityName.innerText = this.weather.state.lastCity;
   }
 
   saveSearchStr(searchStr) {
     this.searchStr = searchStr;
-    this.weather.state.city = this.searchStr;
   }
 
   async reloadImage() {
     animateButton(this.reloadImageButton);
     await this.apiLoader.getImage();
     this.weather.renderBGImage();
-  }
-
-  switchTemperature({ target }) {
-    if (this.storage.state.celsius && target.classList.contains('fahrenheit-btn')) {
-      this.chooseFahrenheit();
-    }
-
-    if (this.storage.state.fahrenheit && target.classList.contains('celsius-btn')) {
-      this.chooseCelsius();
-    }
   }
 
   chooseCelsius() {
@@ -148,16 +208,20 @@ export default class ControlPanel {
   }
 
   async updateInfo() {
-    this.startLoad();
-    this.removeNodes();
-    await this.apiLoader.getCoords();
-    await this.geoLocation.getMap();
-    await this.apiLoader.getLocation();
-    await this.apiLoader.getWeather();
-    await this.apiLoader.getImage();
-    this.geoLocation.addCoordsText();
-    this.weather.renderData();
-    this.endLoad();
+    try {
+      this.startLoad();
+      this.removeNodes();
+      await this.apiLoader.getCoords();
+      await this.geoLocation.getMap();
+      await this.apiLoader.getLocation();
+      await this.apiLoader.getWeather();
+      await this.apiLoader.getImage();
+      this.geoLocation.addCoordsText();
+      this.weather.renderData();
+      this.endLoad();
+    } catch (err) {
+      showErrorMessage('Error');
+    }
   }
 
   startLoad() {
@@ -177,5 +241,31 @@ export default class ControlPanel {
     removeFirstChildNode(map, latitude, longitude);
     this.weatherSection = document.querySelector('.weather-section');
     removeAllChildNodes(this.weatherSection);
+  }
+
+  startRecognition() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'en-US';
+    recognition.start();
+    toggleClass('microphone-animation', this.microphoneIcon);
+
+    recognition.addEventListener('result', (e) => {
+      this.recognitionQuery = e.results[0][0].transcript;
+    });
+
+    recognition.addEventListener('end', () => {
+      toggleClass('microphone-animation', this.microphoneIcon);
+      if (!this.recognitionQuery) {
+        showErrorMessage('Try again');
+        return;
+      }
+      this.searchInput.value = this.recognitionQuery;
+      const temp = this.weather.state.city;
+      this.weather.state.city = this.recognitionQuery;
+      this.weather.state.lastCity = temp;
+      this.updateCityText();
+      this.updateInfo();
+    });
   }
 }

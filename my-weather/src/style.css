@@ -7,6 +7,9 @@
 body {
   background-repeat: no-repeat;
   background-size: cover;
+  height: 100%!important;
+  top:0!important;
+  user-select: none;
 }
 
 li {
@@ -20,9 +23,8 @@ input {
 
 .wrapper {
   position: relative;
-  width: 94vw;
-  height: 95vh;
-  margin: 2.5vh auto;
+  width: 100%;
+  height: 100%;
   font-family: Arial, Helvetica, sans-serif;
   color: white;
 }
@@ -31,6 +33,7 @@ input {
   display: flex;
   justify-content: center;
   height: 45px;
+  padding-top: 20px;
 }
 
 .control-panel {
@@ -43,20 +46,27 @@ input {
 .reload-btn,
 .celsius-btn,
 .fahrenheit-btn,
-.search-btn {
+.search-btn,
+.last-city-btn {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: 45px;
   height: 45px;
-  font-size: 18px;
-  font-weight: 600;
   color: white;
   background-color: rgba(51, 51, 51, 0.7);
   cursor: pointer;
 }
 
-.reload-btn {
+.reload-btn,
+.celsius-btn,
+.fahrenheit-btn,
+.search-btn {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.reload-btn,
+.last-city-btn {
   border-radius: 7px;
 }
 
@@ -84,6 +94,18 @@ input {
   border-radius: 0 7px 7px 0;
 }
 
+.last-city-btn {
+  flex-wrap: wrap;
+  width: 170px;
+  padding: 5px;
+  font-size: 16px;
+}
+
+.last-city {
+  margin-left: 7px;
+  color: rgb(117, 242, 247);
+}
+
 .search-bar {
   display: flex;
   height: 100%;
@@ -105,6 +127,16 @@ input::-webkit-input-placeholder {
   color: rgb(207, 206, 206);
 }
 
+.microphone {
+  padding: 13px 3px;
+  background-color: rgba(51, 51, 51, 0.5);
+  cursor: pointer;
+}
+
+.fa-microphone {
+  font-size: 20px;
+}
+
 .main {
   display: flex;
   justify-content: space-between;
@@ -112,8 +144,8 @@ input::-webkit-input-placeholder {
 }
 
 .weather-section {
-  width: 580px;
-  height: 450px;
+  width: 660px;
+  height: 470px;
   padding: 10px;
   margin-left: 25px;
   border-radius: 20px;
@@ -139,7 +171,7 @@ input::-webkit-input-placeholder {
 }
 
 .temperature-today {
-  font-size: 130px;
+  font-size: 122px;
   font-weight: 600;
 }
 
@@ -151,7 +183,7 @@ input::-webkit-input-placeholder {
 }
 
 .weather-today-data {
-  width: 160px;
+  width: 200px;
   margin-top: 30px;
   font-size: 17px;
   font-weight: 600;
@@ -207,7 +239,7 @@ input::-webkit-input-placeholder {
 #map {
   width: 400px;
   height: 400px;
-  margin-top: 35px;
+  margin: 35px 20px 0 20px;
 }
 
 .coords {
@@ -253,7 +285,8 @@ input::-webkit-input-placeholder {
   width: 350px;
   height: 50px;
   padding: 20px;
-  font-size: 20px;
+  font-size: 22px;
+  font-weight: 600;
   color: rgba(2, 89, 92);
   text-align: center;
   border-radius: 10px;
@@ -277,9 +310,47 @@ input::-webkit-input-placeholder {
   animation: search .5s ease-in-out;
 }
 
-@media (max-width: 1110px) {
+.last-city-btn-animation {
+  animation: last-city .5s ease-in-out;
+}
+
+.microphone-animation {
+  animation: rotate 0.2s infinite alternate;
+}
+
+.goog-te-gadget-simple  {
+  display: inline-block;
+  padding: 12px!important;
+  border-radius: 10px;
+  font-size: 16px!important;
+  color: white;
+  background-color:  rgba(51, 51, 51, 0.5)!important;
+  cursor: pointer;
+}
+
+.goog-te-gadget-simple span {
+  color: white!important;
+}
+
+.goog-te-banner-frame.skiptranslate,
+.goog-te-banner-frame,
+#goog-gt-tt,
+.goog-te-gadget-icon {
+  display: none!important;
+}
+
+.goog-text-highlight {
+  background-color: inherit!important;
+  box-shadow: none!important;
+}
+
+@media (max-width: 1150px) {
+  html {
+    height: 170%!important;
+  }
+
   .wrapper {
-    height: 1100px;
+    height: 1200px;
   }
 
   .main {
@@ -301,11 +372,7 @@ input::-webkit-input-placeholder {
   }
 }
 
-@media (max-width: 515px) {
-  .wrapper {
-    height: 1500px;
-  }
-
+@media (max-width: 850px) {
   .header {
     height: 100px;
   }
@@ -320,21 +387,44 @@ input::-webkit-input-placeholder {
   }
 
   .search-bar {
-    margin-top: 10px;
-  }
-
-  .location {
-    font-size: 35px;
-  }
-
-  .weather-section {
-    width: 90%;
-    height: 800px;
+    margin: 10px 0 0 10%;
   }
 
   .weather-today {
     flex-wrap: wrap;
     justify-content: center;
+  }
+
+  .temperature-today {
+    font-size: 110px;
+  }
+
+  .error-message {
+    left: 18%;
+  }
+}
+
+@media (max-width: 620px) {
+  html {
+    height: 210%!important;
+  }
+
+  .wrapper {
+    height: 1500px;
+  }
+
+  .location {
+    font-size: 32px;
+  }
+
+  .weather-section {
+    width: 90%;
+    height: 810px;
+  }
+
+  .temperature-today {
+    width: 60%;
+    text-align: center;
   }
 
   .weather-icon {
@@ -343,6 +433,7 @@ input::-webkit-input-placeholder {
   }
 
   .weather-forecast-item {
+    width: 40%;
     height: 140px;
   }
 
@@ -353,7 +444,7 @@ input::-webkit-input-placeholder {
   }
 
   #map {
-    margin-left: 0;
+    margin: 35px 0 0;
     width: 350px;
     height: 350px;
   }
@@ -361,29 +452,47 @@ input::-webkit-input-placeholder {
   .spinner {
     left: 34%;
   }
+
+  .error-message {
+    width: 250px;
+  }
 }
 
-@media (max-width: 400px) {
+@media (max-width: 550px) {
+  .header {
+    height: 155px;
+  }
+
+  .last-city-btn {
+    margin: 10px 0 0 20%;
+  }
+
+  .temperature-today {
+    width: 95%;
+  }
+}
+
+@media (max-width: 460px) {
+  html {
+    height: 270%!important;
+  }
+
   .wrapper {
-    height: 1750px;
+    height: 1940px;
   }
 
   .weather-section {
     height: 1220px;
   }
-  .weather-today-data {
-    width: 190px;
-    font-size: 20px;
-  }
-
-  .temperature-today {
-    width: 60%;
-    text-align: center;
-  }
 
   .weather-forecast-item {
-    width: 200px;
-    height: 180px;
+    width: 55%;
+    height: 190px;
+  }
+
+  .weather-today-data {
+    width: 80%;
+    font-size: 20px;
   }
 
   .weather-forecast-day {
@@ -406,6 +515,37 @@ input::-webkit-input-placeholder {
 
   .spinner {
     left: 28%;
+  }
+
+  .error-message {
+    left: 10%;
+    width: 200px;
+  }
+}
+
+@media (max-width: 375px) {
+  .wrapper {
+    height: 1850px;
+  }
+
+  .header {
+    height: 187px;
+  }
+
+  .temperature-switch {
+    margin: 0;
+  }
+
+  .weather-today {
+    margin: 20px 0;
+  }
+
+  .weather-today-data {
+    width: 90%;
+  }
+
+  .input {
+    width: 150px;
   }
 }
 
@@ -455,6 +595,22 @@ input::-webkit-input-placeholder {
   }
 }
 
+@keyframes last-city {
+  0% {
+    width: 170px;
+    height: 45px;
+  }
+  50.0%  {
+    width: 165px;
+    height: 40px;
+  }
+  100.0% {
+    width: 170px;
+    height: 45px;
+  }
+}
+
+
 @keyframes rotate {
   from {
     transform: rotate(-10deg);
@@ -462,5 +618,15 @@ input::-webkit-input-placeholder {
 
   to {
     transform: rotate(10deg);
+  }
+}
+
+@keyframes microphone {
+  from {
+    transform: rotate(-8deg);
+  }
+
+  to {
+    transform: rotate(8deg);
   }
 }

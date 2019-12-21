@@ -1,7 +1,8 @@
 module.exports = {
   "env": {
       "browser": true,
-      "es6": true
+      "es6": true,
+      "jest": true,
   },
   "extends": "airbnb-base",
   "globals": {
@@ -13,6 +14,5 @@ module.exports = {
       "sourceType": "module"
   },
   "rules": {
-    "no-alert": "off"
   }
 };
