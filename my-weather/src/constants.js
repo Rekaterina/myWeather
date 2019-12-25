@@ -1,6 +1,6 @@
 const API_KEY = {
   weather: 'b94f3a8c43a2c175fd804ca11cdc45c4',
-  geocoder: '502da1bf5b9948228d24b96aad8f3b49',
+  geocoder: 'e1ca72f9b542444d83814368a5b1d1ca',
   unsplash: '607543282482e421de9fb7ccba6e43658df591b173859db6751d570993e55958',
 };
 
