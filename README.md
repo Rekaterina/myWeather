@@ -1,1 +1,1 @@
- Link to deploying : [https://brave-lichterman-53d68a.netlify.com/](https://brave-lichterman-53d68a.netlify.com/)
+ Link to deploying : [https://rekaterina-cv.netlify.app/](https://rekaterina-cv.netlify.app/)
